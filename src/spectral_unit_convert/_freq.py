@@ -1,7 +1,17 @@
 from __future__ import annotations
 
 import abc
-from typing import TYPE_CHECKING, Any, ClassVar, Final, Generic, Literal, TypeVar, Union
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    ClassVar,
+    Final,
+    Generic,
+    Literal,
+    TypeVar,
+    Union,
+    overload,
+)
 
 if TYPE_CHECKING:
     from typing_extensions import TypeAlias
@@ -128,6 +138,39 @@ class _FrequencyMeasure(Generic[_T], abc.ABC):
     def as_wavenumber(self, unit: _UNIT_WAVENUMBER) -> Wavenumber[_T]:
         return Wavenumber(self.value_as_wavenumber(unit), unit)
 
+    @overload
+    def as_unit(
+        self,
+        measure: type[Frequency[_T]],
+        unit: _UNIT_FREQUENCY,
+    ) -> Frequency[_T]: ...
+
+    @overload
+    def as_unit(
+        self,
+        measure: type[Wavelength[_T]],
+        unit: _UNIT_WAVELENGTH,
+    ) -> Wavelength[_T]: ...
+
+    @overload
+    def as_unit(
+        self,
+        measure: type[Wavenumber[_T]],
+        unit: _UNIT_WAVENUMBER,
+    ) -> Wavenumber[_T]: ...
+
+    def as_unit(
+        self,
+        measure: type[FrequencyMeasure[_T]],
+        unit: _UNIT_FREQUENCY | _UNIT_WAVELENGTH | _UNIT_WAVENUMBER,
+    ) -> FrequencyMeasure[_T]:
+        converter_lookup = {
+            Frequency: self.as_frequency,
+            Wavelength: self.as_wavelength,
+            Wavenumber: self.as_wavenumber,
+        }
+        return converter_lookup[measure](unit)  # type: ignore
+
     @abc.abstractmethod
     def value_as_frequency(self, unit: _UNIT_FREQUENCY) -> _T: ...
 
@@ -144,6 +187,8 @@ class Frequency(_FrequencyMeasure[_T], unit_suffix="Hz"):
     Wavelength(12.49..., 'cm')
     >>> Frequency(2.4, "GHz").as_wavenumber("cm-1").as_wavelength("cm")
     Wavelength(12.49..., 'cm')
+    >>> Frequency(1000, "MHz").as_frequency("GHz")
+    Frequency(1.0, 'GHz')
     """
 
     __slots__ = ()
@@ -156,7 +201,7 @@ class Frequency(_FrequencyMeasure[_T], unit_suffix="Hz"):
 
     def value_as_frequency(self, unit: _UNIT_FREQUENCY) -> _T:
         dest_scale = Frequency._SCALES[unit]
-        return self.value * 10 ** (dest_scale - self._scale)  # type: ignore
+        return self.value * 10 ** (self._scale - dest_scale)  # type: ignore
 
     def value_as_wavelength(self, unit: _UNIT_WAVELENGTH) -> _T:
         dest_scale = Wavelength._SCALES[unit]
@@ -189,7 +234,7 @@ class Wavelength(_FrequencyMeasure[_T], unit_suffix="m"):
 
     def value_as_wavelength(self, unit: _UNIT_WAVELENGTH) -> _T:
         dest_scale = Wavelength._SCALES[unit]
-        return self.value * 10 ** (dest_scale - self._scale)  # type: ignore
+        return self.value * 10 ** (self._scale - dest_scale)  # type: ignore
 
     def value_as_wavenumber(self, unit: _UNIT_WAVENUMBER) -> _T:
         dest_scale = Wavenumber._SCALES[unit]
@@ -222,4 +267,4 @@ class Wavenumber(_FrequencyMeasure[_T], unit_suffix="m-1", invert=True):
 
     def value_as_wavenumber(self, unit: _UNIT_WAVENUMBER) -> _T:
         dest_scale = Wavenumber._SCALES[unit]
-        return self.value * 10 ** (dest_scale - self._scale)  # type: ignore
+        return self.value * 10 ** (self._scale - dest_scale)  # type: ignore
