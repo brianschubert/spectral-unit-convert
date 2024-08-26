@@ -142,6 +142,8 @@ class Frequency(_FrequencyMeasure[_T], unit_suffix="Hz"):
     """
     >>> Frequency(2.4, "GHz").as_wavelength("cm")
     Wavelength(12.49..., 'cm')
+    >>> Frequency(2.4, "GHz").as_wavenumber("cm-1").as_wavelength("cm")
+    Wavelength(12.49..., 'cm')
     """
 
     __slots__ = ()
@@ -161,7 +163,8 @@ class Frequency(_FrequencyMeasure[_T], unit_suffix="Hz"):
         return SPEED_OF_LIGHT / self.value * 10 ** (-dest_scale - self._scale)  # type: ignore
 
     def value_as_wavenumber(self, unit: _UNIT_WAVENUMBER) -> _T:
-        raise NotImplementedError
+        dest_scale = Wavenumber._SCALES[unit]
+        return self.value / SPEED_OF_LIGHT * 10 ** (-dest_scale + self._scale)  # type: ignore
 
 
 class Wavelength(_FrequencyMeasure[_T], unit_suffix="m"):
@@ -197,6 +200,8 @@ class Wavenumber(_FrequencyMeasure[_T], unit_suffix="m-1", invert=True):
     """
     >>> Wavenumber(4000, 'cm-1').as_wavelength("um")
     Wavelength(2.5, 'um')
+    >>> Wavenumber(4000, 'cm-1').as_frequency("GHz").as_wavelength("um")
+    Wavelength(2.5..., 'um')
     """
 
     __slots__ = ()
@@ -208,7 +213,8 @@ class Wavenumber(_FrequencyMeasure[_T], unit_suffix="m-1", invert=True):
         self._scale = self._SCALES[unit]
 
     def value_as_frequency(self, unit: _UNIT_FREQUENCY) -> _T:
-        raise NotImplementedError
+        dest_scale = Frequency._SCALES[unit]
+        return SPEED_OF_LIGHT * self.value * 10 ** (-dest_scale + self._scale)  # type: ignore
 
     def value_as_wavelength(self, unit: _UNIT_WAVELENGTH) -> _T:
         dest_scale = Wavelength._SCALES[unit]
