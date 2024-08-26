@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "spectral-unit-convert"
+version = "0.1.0-dev"
+description = ""
+authors = ["Brian Schubert <schubert.b@northeastern.edu>"]
+readme = "README.md"
+packages = [
+    { from = "src", include = "spectral_unit_convert" },
+]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
