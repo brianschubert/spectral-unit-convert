@@ -50,6 +50,7 @@ _UNIT_WAVELENGTH: TypeAlias = Literal[
     "mm",
     "um",
     "nm",
+    "A",  # Unique to wavelength: angstroms.
     "pm",
     "fm",
 ]
@@ -221,6 +222,8 @@ class Wavelength(_FrequencyMeasure[_T], unit_suffix="m"):
     Frequency(2.4..., 'GHz')
     >>> Wavelength(2.5, 'um').as_wavenumber("cm-1")
     Wavenumber(4000.0, 'cm-1')
+    >>> Wavelength(1.0, 'nm').as_wavelength("A")
+    Wavelength(10.0, 'A')
     """
 
     __slots__ = ()
@@ -242,6 +245,9 @@ class Wavelength(_FrequencyMeasure[_T], unit_suffix="m"):
     def value_as_wavenumber(self, unit: _UNIT_WAVENUMBER) -> _T:
         dest_scale = Wavenumber._SCALES[unit]
         return 1 / self.value * 10.0 ** (-dest_scale - self._scale)
+
+
+Wavelength._SCALES["A"] = -10  # Unique to wavelength: angstroms.
 
 
 class Wavenumber(_FrequencyMeasure[_T], unit_suffix="m-1", invert=True):
