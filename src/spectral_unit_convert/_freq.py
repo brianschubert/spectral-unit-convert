@@ -168,6 +168,8 @@ class Wavelength(_FrequencyMeasure[_T], unit_suffix="m"):
     """
     >>> Wavelength(12.49, 'cm').as_frequency("GHz")
     Frequency(2.4..., 'GHz')
+    >>> Wavelength(2.5, 'um').as_wavenumber("cm-1")
+    Wavenumber(4000.0, 'cm-1')
     """
 
     __slots__ = ()
@@ -187,10 +189,16 @@ class Wavelength(_FrequencyMeasure[_T], unit_suffix="m"):
         return self.value * 10 ** (dest_scale - self._scale)  # type: ignore
 
     def value_as_wavenumber(self, unit: _UNIT_WAVENUMBER) -> _T:
-        raise NotImplementedError
+        dest_scale = Wavenumber._SCALES[unit]
+        return 1 / self.value * 10 ** (-dest_scale - self._scale)  # type: ignore
 
 
 class Wavenumber(_FrequencyMeasure[_T], unit_suffix="m-1", invert=True):
+    """
+    >>> Wavenumber(4000, 'cm-1').as_wavelength("um")
+    Wavelength(2.5, 'um')
+    """
+
     __slots__ = ()
 
     _SCALES: ClassVar[dict[_UNIT_WAVENUMBER, int]]
@@ -203,7 +211,9 @@ class Wavenumber(_FrequencyMeasure[_T], unit_suffix="m-1", invert=True):
         raise NotImplementedError
 
     def value_as_wavelength(self, unit: _UNIT_WAVELENGTH) -> _T:
-        raise NotImplementedError
+        dest_scale = Wavelength._SCALES[unit]
+        return 1 / self.value * 10 ** (-dest_scale - self._scale)  # type: ignore
 
     def value_as_wavenumber(self, unit: _UNIT_WAVENUMBER) -> _T:
-        raise NotImplementedError
+        dest_scale = Wavenumber._SCALES[unit]
+        return self.value * 10 ** (dest_scale - self._scale)  # type: ignore
