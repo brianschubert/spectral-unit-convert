@@ -1,7 +1,10 @@
 from __future__ import annotations
 
 import abc
-from typing import Final, Generic, Literal, TypeAlias, TypeVar, Union
+from typing import TYPE_CHECKING, Final, Generic, Literal, TypeVar, Union
+
+if TYPE_CHECKING:
+    from typing_extensions import TypeAlias
 
 _T = TypeVar("_T")
 

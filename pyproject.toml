@@ -12,6 +12,7 @@ packages = [
 python = "^3.9"
 
 [tool.poetry.group.dev.dependencies]
+typing-extensions = "^4.12.2"
 ruff = "^0.6.2"
 mypy = "^1.11.2"
 
