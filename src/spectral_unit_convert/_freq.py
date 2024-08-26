@@ -73,6 +73,8 @@ _PREFIX_SCALES: Final[dict[_UNIT_PREFIX, int]] = {
     "f": -15,
 }
 
+SPEED_OF_LIGHT: Final = 299_792_458.0
+
 
 class _FrequencyMeasure(Generic[_T], abc.ABC):
     # Value expressed in base units is equal to `_value * 10 ** _scale`
@@ -117,17 +119,31 @@ class _FrequencyMeasure(Generic[_T], abc.ABC):
             )
         )
 
-    @abc.abstractmethod
-    def as_frequency(self, unit: _UNIT_FREQUENCY) -> Frequency[_T]: ...
+    def as_frequency(self, unit: _UNIT_FREQUENCY) -> Frequency[_T]:
+        return Frequency(self.value_as_frequency(unit), unit)
+
+    def as_wavelength(self, unit: _UNIT_WAVELENGTH) -> Wavelength[_T]:
+        return Wavelength(self.value_as_wavelength(unit), unit)
+
+    def as_wavenumber(self, unit: _UNIT_WAVENUMBER) -> Wavenumber[_T]:
+        return Wavenumber(self.value_as_wavenumber(unit), unit)
 
     @abc.abstractmethod
-    def as_wavelength(self, unit: _UNIT_WAVELENGTH) -> Wavelength[_T]: ...
+    def value_as_frequency(self, unit: _UNIT_FREQUENCY) -> _T: ...
 
     @abc.abstractmethod
-    def as_wavenumber(self, unit: _UNIT_WAVENUMBER) -> Wavenumber[_T]: ...
+    def value_as_wavelength(self, unit: _UNIT_WAVELENGTH) -> _T: ...
+
+    @abc.abstractmethod
+    def value_as_wavenumber(self, unit: _UNIT_WAVENUMBER) -> _T: ...
 
 
 class Frequency(_FrequencyMeasure[_T], unit_suffix="Hz"):
+    """
+    >>> Frequency(2.4, "GHz").as_wavelength("cm")
+    Wavelength(12.49..., 'cm')
+    """
+
     __slots__ = ()
 
     _SCALES: ClassVar[dict[_UNIT_FREQUENCY, int]]
@@ -136,8 +152,24 @@ class Frequency(_FrequencyMeasure[_T], unit_suffix="Hz"):
         self._value = value
         self._scale = self._SCALES[unit]
 
+    def value_as_frequency(self, unit: _UNIT_FREQUENCY) -> _T:
+        dest_scale = Frequency._SCALES[unit]
+        return self.value * 10 ** (dest_scale - self._scale)  # type: ignore
+
+    def value_as_wavelength(self, unit: _UNIT_WAVELENGTH) -> _T:
+        dest_scale = Wavelength._SCALES[unit]
+        return SPEED_OF_LIGHT / self.value * 10 ** (-dest_scale - self._scale)  # type: ignore
+
+    def value_as_wavenumber(self, unit: _UNIT_WAVENUMBER) -> _T:
+        raise NotImplementedError
+
 
 class Wavelength(_FrequencyMeasure[_T], unit_suffix="m"):
+    """
+    >>> Wavelength(12.49, 'cm').as_frequency("GHz")
+    Frequency(2.4..., 'GHz')
+    """
+
     __slots__ = ()
 
     _SCALES: ClassVar[dict[_UNIT_WAVELENGTH, int]]
@@ -145,6 +177,17 @@ class Wavelength(_FrequencyMeasure[_T], unit_suffix="m"):
     def __init__(self, value: _T, unit: _UNIT_WAVELENGTH) -> None:
         self._value = value
         self._scale = self._SCALES[unit]
+
+    def value_as_frequency(self, unit: _UNIT_FREQUENCY) -> _T:
+        dest_scale = Frequency._SCALES[unit]
+        return SPEED_OF_LIGHT / self.value * 10 ** (-dest_scale - self._scale)  # type: ignore
+
+    def value_as_wavelength(self, unit: _UNIT_WAVELENGTH) -> _T:
+        dest_scale = Wavelength._SCALES[unit]
+        return self.value * 10 ** (dest_scale - self._scale)  # type: ignore
+
+    def value_as_wavenumber(self, unit: _UNIT_WAVENUMBER) -> _T:
+        raise NotImplementedError
 
 
 class Wavenumber(_FrequencyMeasure[_T], unit_suffix="m-1", invert=True):
@@ -155,3 +198,12 @@ class Wavenumber(_FrequencyMeasure[_T], unit_suffix="m-1", invert=True):
     def __init__(self, value: _T, unit: _UNIT_WAVENUMBER) -> None:
         self._value = value
         self._scale = self._SCALES[unit]
+
+    def value_as_frequency(self, unit: _UNIT_FREQUENCY) -> _T:
+        raise NotImplementedError
+
+    def value_as_wavelength(self, unit: _UNIT_WAVELENGTH) -> _T:
+        raise NotImplementedError
+
+    def value_as_wavenumber(self, unit: _UNIT_WAVENUMBER) -> _T:
+        raise NotImplementedError
