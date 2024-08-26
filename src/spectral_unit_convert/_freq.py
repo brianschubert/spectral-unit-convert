@@ -16,7 +16,10 @@ from typing import (
 if TYPE_CHECKING:
     from typing_extensions import TypeAlias
 
-_T = TypeVar("_T")
+    from ._typing import SupportsFloatDivMul
+
+
+_T = TypeVar("_T", bound="SupportsFloatDivMul")
 
 _UNIT_PREFIX: TypeAlias = Literal[
     "P", "T", "G", "M", "k", "-", "c", "m", "u", "n", "p", "f"
@@ -187,7 +190,7 @@ class Frequency(_FrequencyMeasure[_T], unit_suffix="Hz"):
     Wavelength(12.49..., 'cm')
     >>> Frequency(2.4, "GHz").as_wavenumber("cm-1").as_wavelength("cm")
     Wavelength(12.49..., 'cm')
-    >>> Frequency(1000, "MHz").as_frequency("GHz")
+    >>> Frequency(1000.0, "MHz").as_frequency("GHz")
     Frequency(1.0, 'GHz')
     """
 
@@ -201,15 +204,15 @@ class Frequency(_FrequencyMeasure[_T], unit_suffix="Hz"):
 
     def value_as_frequency(self, unit: _UNIT_FREQUENCY) -> _T:
         dest_scale = Frequency._SCALES[unit]
-        return self.value * 10 ** (self._scale - dest_scale)  # type: ignore
+        return self.value * 10.0 ** (self._scale - dest_scale)
 
     def value_as_wavelength(self, unit: _UNIT_WAVELENGTH) -> _T:
         dest_scale = Wavelength._SCALES[unit]
-        return SPEED_OF_LIGHT / self.value * 10 ** (-dest_scale - self._scale)  # type: ignore
+        return SPEED_OF_LIGHT / self.value * 10.0 ** (-dest_scale - self._scale)
 
     def value_as_wavenumber(self, unit: _UNIT_WAVENUMBER) -> _T:
         dest_scale = Wavenumber._SCALES[unit]
-        return self.value / SPEED_OF_LIGHT * 10 ** (-dest_scale + self._scale)  # type: ignore
+        return self.value / SPEED_OF_LIGHT * 10.0 ** (-dest_scale + self._scale)
 
 
 class Wavelength(_FrequencyMeasure[_T], unit_suffix="m"):
@@ -230,22 +233,22 @@ class Wavelength(_FrequencyMeasure[_T], unit_suffix="m"):
 
     def value_as_frequency(self, unit: _UNIT_FREQUENCY) -> _T:
         dest_scale = Frequency._SCALES[unit]
-        return SPEED_OF_LIGHT / self.value * 10 ** (-dest_scale - self._scale)  # type: ignore
+        return SPEED_OF_LIGHT / self.value * 10.0 ** (-dest_scale - self._scale)
 
     def value_as_wavelength(self, unit: _UNIT_WAVELENGTH) -> _T:
         dest_scale = Wavelength._SCALES[unit]
-        return self.value * 10 ** (self._scale - dest_scale)  # type: ignore
+        return self.value * 10.0 ** (self._scale - dest_scale)
 
     def value_as_wavenumber(self, unit: _UNIT_WAVENUMBER) -> _T:
         dest_scale = Wavenumber._SCALES[unit]
-        return 1 / self.value * 10 ** (-dest_scale - self._scale)  # type: ignore
+        return 1 / self.value * 10.0 ** (-dest_scale - self._scale)
 
 
 class Wavenumber(_FrequencyMeasure[_T], unit_suffix="m-1", invert=True):
     """
-    >>> Wavenumber(4000, 'cm-1').as_wavelength("um")
+    >>> Wavenumber(4000.0, 'cm-1').as_wavelength("um")
     Wavelength(2.5, 'um')
-    >>> Wavenumber(4000, 'cm-1').as_frequency("GHz").as_wavelength("um")
+    >>> Wavenumber(4000.0, 'cm-1').as_frequency("GHz").as_wavelength("um")
     Wavelength(2.5..., 'um')
     """
 
@@ -259,12 +262,12 @@ class Wavenumber(_FrequencyMeasure[_T], unit_suffix="m-1", invert=True):
 
     def value_as_frequency(self, unit: _UNIT_FREQUENCY) -> _T:
         dest_scale = Frequency._SCALES[unit]
-        return SPEED_OF_LIGHT * self.value * 10 ** (-dest_scale + self._scale)  # type: ignore
+        return SPEED_OF_LIGHT * self.value * 10.0 ** (-dest_scale + self._scale)
 
     def value_as_wavelength(self, unit: _UNIT_WAVELENGTH) -> _T:
         dest_scale = Wavelength._SCALES[unit]
-        return 1 / self.value * 10 ** (-dest_scale - self._scale)  # type: ignore
+        return 1 / self.value * 10.0 ** (-dest_scale - self._scale)
 
     def value_as_wavenumber(self, unit: _UNIT_WAVENUMBER) -> _T:
         dest_scale = Wavenumber._SCALES[unit]
-        return self.value * 10 ** (self._scale - dest_scale)  # type: ignore
+        return self.value * 10.0 ** (self._scale - dest_scale)
