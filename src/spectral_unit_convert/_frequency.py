@@ -115,7 +115,7 @@ class _FrequencyMeasure(Generic[_T], abc.ABC):
         }
 
     def __repr__(self) -> str:
-        return f"{type(self).__qualname__}({self.value!r}, {self.unit!r})"
+        return f"{type(self).__qualname__}({self._value!r}, {self.unit!r})"
 
     @property
     def value(self) -> _T:
@@ -205,15 +205,15 @@ class Frequency(_FrequencyMeasure[_T], unit_suffix="Hz"):
 
     def value_as_frequency(self, unit: _UNIT_FREQUENCY) -> _T:
         dest_scale = Frequency._SCALES[unit]
-        return self.value * 10.0 ** (self._scale - dest_scale)
+        return self._value * 10.0 ** (self._scale - dest_scale)
 
     def value_as_wavelength(self, unit: _UNIT_WAVELENGTH) -> _T:
         dest_scale = Wavelength._SCALES[unit]
-        return SPEED_OF_LIGHT / self.value * 10.0 ** (-dest_scale - self._scale)
+        return SPEED_OF_LIGHT / self._value * 10.0 ** (-dest_scale - self._scale)
 
     def value_as_wavenumber(self, unit: _UNIT_WAVENUMBER) -> _T:
         dest_scale = Wavenumber._SCALES[unit]
-        return self.value / SPEED_OF_LIGHT * 10.0 ** (-dest_scale + self._scale)
+        return self._value / SPEED_OF_LIGHT * 10.0 ** (-dest_scale + self._scale)
 
 
 class Wavelength(_FrequencyMeasure[_T], unit_suffix="m"):
@@ -236,15 +236,15 @@ class Wavelength(_FrequencyMeasure[_T], unit_suffix="m"):
 
     def value_as_frequency(self, unit: _UNIT_FREQUENCY) -> _T:
         dest_scale = Frequency._SCALES[unit]
-        return SPEED_OF_LIGHT / self.value * 10.0 ** (-dest_scale - self._scale)
+        return SPEED_OF_LIGHT / self._value * 10.0 ** (-dest_scale - self._scale)
 
     def value_as_wavelength(self, unit: _UNIT_WAVELENGTH) -> _T:
         dest_scale = Wavelength._SCALES[unit]
-        return self.value * 10.0 ** (self._scale - dest_scale)
+        return self._value * 10.0 ** (self._scale - dest_scale)
 
     def value_as_wavenumber(self, unit: _UNIT_WAVENUMBER) -> _T:
         dest_scale = Wavenumber._SCALES[unit]
-        return 1 / self.value * 10.0 ** (-dest_scale - self._scale)
+        return 1 / self._value * 10.0 ** (-dest_scale - self._scale)
 
 
 Wavelength._SCALES["A"] = -10  # Unique to wavelength: angstroms.
@@ -268,12 +268,12 @@ class Wavenumber(_FrequencyMeasure[_T], unit_suffix="m-1", invert=True):
 
     def value_as_frequency(self, unit: _UNIT_FREQUENCY) -> _T:
         dest_scale = Frequency._SCALES[unit]
-        return SPEED_OF_LIGHT * self.value * 10.0 ** (-dest_scale + self._scale)
+        return SPEED_OF_LIGHT * self._value * 10.0 ** (-dest_scale + self._scale)
 
     def value_as_wavelength(self, unit: _UNIT_WAVELENGTH) -> _T:
         dest_scale = Wavelength._SCALES[unit]
-        return 1 / self.value * 10.0 ** (-dest_scale - self._scale)
+        return 1 / self._value * 10.0 ** (-dest_scale - self._scale)
 
     def value_as_wavenumber(self, unit: _UNIT_WAVENUMBER) -> _T:
         dest_scale = Wavenumber._SCALES[unit]
-        return self.value * 10.0 ** (self._scale - dest_scale)
+        return self._value * 10.0 ** (self._scale - dest_scale)
