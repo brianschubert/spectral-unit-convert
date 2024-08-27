@@ -10,7 +10,6 @@ packages = [
 
 [tool.poetry.dependencies]
 python = "^3.9"
-pytest = "^8.3.2"
 
 [tool.poetry.group.dev.dependencies]
 typing-extensions = "^4.12.2"
