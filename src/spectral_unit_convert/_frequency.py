@@ -22,7 +22,7 @@ if TYPE_CHECKING:
 _T = TypeVar("_T", bound="SupportsFloatDivMul")
 
 _UNIT_PREFIX: TypeAlias = Literal[
-    "P", "T", "G", "M", "k", "-", "c", "m", "u", "n", "p", "f"
+    "P", "T", "G", "M", "k", "", "c", "m", "u", "n", "p", "f"
 ]
 
 _UNIT_FREQUENCY: TypeAlias = Literal[
@@ -31,7 +31,7 @@ _UNIT_FREQUENCY: TypeAlias = Literal[
     "GHz",
     "MHz",
     "kHz",
-    "-Hz",
+    "Hz",
     "cHz",
     "mHz",
     "uHz",
@@ -45,7 +45,7 @@ _UNIT_WAVELENGTH: TypeAlias = Literal[
     "Gm",
     "Mm",
     "km",
-    "-m",
+    "m",
     "cm",
     "mm",
     "um",
@@ -61,7 +61,7 @@ _UNIT_WAVENUMBER: TypeAlias = Literal[
     "Gm-1",
     "Mm-1",
     "km-1",
-    "-m-1",
+    "m-1",
     "cm-1",
     "mm-1",
     "um-1",
@@ -78,7 +78,7 @@ _PREFIX_SCALES: Final[dict[_UNIT_PREFIX, int]] = {
     "G": 9,
     "M": 6,
     "k": 3,
-    "-": 0,
+    "": 0,
     "c": -2,
     "m": -3,
     "u": -6,
